@@ -22,11 +22,11 @@ const Chats = () => {
   async function getFile(url) {
     let response = await fetch(url);
     let data = await response.blob();
-    return new File([data], "test.jpg", { type: 'image/jpeg' });
+    return new File([data], "userPhoto.jpg", { type: 'image/jpeg' });
   }
 
   useEffect(() => {
-    if(!user){
+    if(!user || user === null ){
       history.push('/')
 
       return;
@@ -34,7 +34,7 @@ const Chats = () => {
 
     axios.get('Https://api.chatengine.io/users/me', {
       headers: {
-        "project-id": "30567932-bf4d-4dd2-be96-bc07b4386a3b",
+        "project-id": process.env.REACT_APP_CHAT_ENGINE_ID,
         "user-name": user.email,
         "user-secret": user.uid,
       }
@@ -54,7 +54,7 @@ const Chats = () => {
 
           axios.post('https://api.chatengine.io/users/',
             formdata,
-            { headers: {"private-key": "a2880535-1e54-4e3b-9f52-24e046508c71" } }
+            { headers: {"private-key": process.env.REACT_APP_CHAT_ENGINE_KEY } }
           )
           .then(() => setLoading(false))
           .catch((error) => console.log(error))
@@ -77,7 +77,7 @@ const Chats = () => {
 
       <ChatEngine 
         height="calc(100vh - 66px)"
-        projectID="30567932-bf4d-4dd2-be96-bc07b4386a3b"
+        projectID={process.env.REACT_APP_CHAT_ENGINE_ID}
         userName={user.email}
         userSecret={user.uid}
       />
