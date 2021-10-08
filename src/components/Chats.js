@@ -11,6 +11,7 @@ const Chats = () => {
   const history = useHistory();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const didMountRef = useRef(false)
 
 
   const handleLogout = async () => {
@@ -26,40 +27,44 @@ const Chats = () => {
   }
 
   useEffect(() => {
-    if(!user || user === null ){
-      history.push('/')
 
-      return;
-    }
+    if(!didMountRef.current){
+      didMountRef.current = true
 
-    axios.get('Https://api.chatengine.io/users/me', {
-      headers: {
-        "project-id": process.env.REACT_APP_CHAT_ENGINE_ID,
-        "user-name": user.email,
-        "user-secret": user.uid,
+      if(!user || user === null ){
+        history.push('/')
+        return;
       }
-    })
-    .then(() => {
-      setLoading(false);
-    })
-    .catch(() => {
-      let formdata = new FormData();
-      formdata.append('email', user.email);
-      formdata.append('username', user.email);
-      formdata.append('secret', user.uid);
 
-      getFile(user.photoURL)
-        .then((avatar) => {
-          formdata.append('avatar', avatar, avatar.name);
+      axios.get('Https://api.chatengine.io/users/me', {
+        headers: {
+          "project-id": process.env.REACT_APP_CHAT_ENGINE_ID,
+          "user-name": user.email,
+          "user-secret": user.uid,
+        }
+      })
+      .then(() => {
+        setLoading(false);
+      })
+      .catch(() => {
+        let formdata = new FormData();
+        formdata.append('email', user.email);
+        formdata.append('username', user.email);
+        formdata.append('secret', user.uid);
 
-          axios.post('https://api.chatengine.io/users/',
-            formdata,
-            { headers: {"private-key": process.env.REACT_APP_CHAT_ENGINE_KEY } }
-          )
-          .then(() => setLoading(false))
-          .catch((error) => console.log(error))
-        })
-    })
+        getFile(user.photoURL)
+          .then((avatar) => {
+            formdata.append('avatar', avatar, avatar.name);
+
+            axios.post('https://api.chatengine.io/users/',
+              formdata,
+              { headers: {"private-key": process.env.REACT_APP_CHAT_ENGINE_KEY } }
+            )
+            .then(() => setLoading(false))
+            .catch((error) => console.log(error))
+          })
+      })
+    }
   }, [user, history]);
 
   if(!user || loading) return 'Loading...';
